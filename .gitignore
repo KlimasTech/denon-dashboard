@@ -1,0 +1,7 @@
+# Trwała konfiguracja runtime (IP AVR, preferencje) — nie commitujemy
+app/data/
+
+__pycache__/
+*.pyc
+.venv/
+*.tar.gz

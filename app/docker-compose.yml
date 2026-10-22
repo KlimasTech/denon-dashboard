@@ -1,0 +1,13 @@
+services:
+  denon-dashboard:
+    build: .
+    image: denon-dashboard:latest
+    container_name: denon-dashboard
+    restart: unless-stopped
+    ports:
+      - "7777:7777"
+    environment:
+      - AVR_HOST=10.10.4.7
+      - AVR_PORT=23
+    volumes:
+      - ./data:/app/data
