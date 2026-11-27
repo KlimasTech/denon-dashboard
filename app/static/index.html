@@ -184,7 +184,7 @@
 <body>
 <div class="app">
   <header>
-    <h1 id="pageTitle">🎛 Denon · Salon</h1>
+    <h1 id="pageTitle">🎛 Denon</h1>
     <div class="status-dot" id="statusDot"></div>
   </header>
 
@@ -229,6 +229,10 @@
   <section class="tab-page" id="tab-settings">
     <div class="card">
       <div class="section-title">Adres amplitunera</div>
+      <div class="field" style="max-width: 280px;">
+        <label>Nazwa (wyświetlana na stronie głównej)</label>
+        <input type="text" id="deviceName" maxlength="40" placeholder="np. Salon" />
+      </div>
       <div style="display:flex; align-items:flex-end; gap:10px;">
         <div class="field" style="flex: 1 1 auto; max-width: 180px; margin-bottom: 0;">
           <label>Adres IP</label>
@@ -264,6 +268,22 @@
       <div class="section-title">Panel producenta</div>
       <a id="nativeConfigLink" href="#" target="_blank" rel="noopener" class="btn accent" style="display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none;">
         <span>⚙️</span><span>Konfiguracja</span>
+      </a>
+    </div>
+
+    <div class="card" id="androidCard" style="display:none;">
+      <div class="section-title">Aplikacja Android</div>
+      <button class="btn" id="changeServerBtn" style="width:100%;">🔗 Zmień adres serwera</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Wsparcie</div>
+      <div style="color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
+        Jeśli podoba Ci się ten program i jest dla Ciebie przydatny, możesz postawić mi kawę.
+        Z góry dziękuję za każde wsparcie — to motywuje mnie do dalszej pracy i rozwijania kolejnych funkcji! 💛
+      </div>
+      <a href="https://buycoffee.to/octopusvps" target="_blank" rel="noopener" class="btn accent" style="display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none;">
+        <span>☕</span><span>Postaw kawę</span>
       </a>
     </div>
   </section>
@@ -408,6 +428,19 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
 
 // ── Ustawienia ──
 const avrHostInput = document.getElementById('avrHost');
+const deviceNameInput = document.getElementById('deviceName');
+
+// Nazwa z Ustawien jest tytulem na stronie glownej (puste = domyslne "Denon")
+function ustawTytul(name) {
+  const n = (name || '').trim() || 'Denon';
+  document.getElementById('pageTitle').textContent = '🎛 ' + n;
+}
+fetch('/api/config').then(r => r.json()).then(c => ustawTytul(c.device_name)).catch(() => {});
+// W aplikacji Android (WebView) pokaz przycisk zmiany adresu serwera
+if (window.AndroidApp) {
+  document.getElementById('androidCard').style.display = '';
+  document.getElementById('changeServerBtn').onclick = () => window.AndroidApp.openServerSettings();
+}
 const hideDisabledInput = document.getElementById('hideDisabledSources');
 const volumeDisplayDbInput = document.getElementById('volumeDisplayDb');
 const nativeConfigLink = document.getElementById('nativeConfigLink');
@@ -419,6 +452,8 @@ async function loadConfig() {
   const res = await fetch('/api/config');
   const cfg = await res.json();
   avrHostInput.value = cfg.avr_host;
+  deviceNameInput.value = cfg.device_name || '';
+  ustawTytul(cfg.device_name);
   hideDisabledInput.checked = !!cfg.hide_disabled_sources;
   volumeDisplayDbInput.checked = cfg.volume_display === 'db';
   volumeDisplayMode = cfg.volume_display || 'scale';
@@ -446,6 +481,7 @@ document.getElementById('saveConfigBtn').onclick = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         avr_host: avrHostInput.value.trim(),
+        device_name: deviceNameInput.value.trim(),
         hide_disabled_sources: hideDisabledInput.checked,
         volume_display: volumeDisplayDbInput.checked ? 'db' : 'scale',
       }),

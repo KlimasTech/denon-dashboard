@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.DenonPilot" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/tlo</item>
+        <item name="android:statusBarColor">@color/tlo</item>
+        <item name="android:navigationBarColor">@color/tlo</item>
+    </style>
+</resources>

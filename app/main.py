@@ -330,6 +330,7 @@ async def get_config():
     return {
         "avr_host": denon.host,
         "avr_port": denon.port,
+        "device_name": CONFIG.get("device_name", ""),
         "hide_disabled_sources": CONFIG.get("hide_disabled_sources", False),
         "volume_display": CONFIG.get("volume_display", "scale"),
         "default_volume": CONFIG.get("last_volume"),
@@ -346,6 +347,8 @@ async def set_config(payload: dict):
         return {"ok": False, "error": "Brak adresu IP"}
     CONFIG["avr_host"] = host
     CONFIG["avr_port"] = TELNET_PORT
+    if "device_name" in payload:
+        CONFIG["device_name"] = str(payload["device_name"]).strip()[:40]
     if "hide_disabled_sources" in payload:
         CONFIG["hide_disabled_sources"] = bool(payload["hide_disabled_sources"])
     if "volume_display" in payload and payload["volume_display"] in ("scale", "db"):

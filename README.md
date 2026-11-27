@@ -156,6 +156,47 @@ wysyłają do AVR, gdy urządzenie jest w standby.
   telefonu (Android/Chrome pokazuje prompt; iOS/Safari — ręcznie przez
   "Dodaj do ekranu głównego")
 - W pełni responsywny, ciemny motyw
+- Pole **Nazwa** w Ustawieniach — wyświetlana jako tytuł strony głównej
+  (puste = „Denon”)
+- **Aplikacja Android** (`android/`) — podpisany APK „Denon Pilot”, patrz niżej
+- Sekcja **Wsparcie** w Ustawieniach z linkiem „Postaw kawę”
+
+## Aplikacja Android
+
+Podpisany plik **APK** (wydawca: KlimasTech) jest dołączony do każdego wydania
+w zakładce [Releases](https://github.com/KlimasTech/denon-dashboard/releases).
+To lekkie opakowanie (WebView, bez zewnętrznych bibliotek) dla dashboardu —
+cała logika pozostaje w serwerze, więc aktualizacja serwera aktualizuje też
+aplikację.
+
+1. Zainstaluj serwer (patrz niżej) i sprawdź, że dashboard działa w przeglądarce
+   telefonu.
+2. Pobierz `DenonPilot-<wersja>.apk` z Releases i zainstaluj (Android poprosi
+   o zgodę na instalację z nieznanych źródeł).
+3. Przy pierwszym uruchomieniu wpisz adres serwera, np.
+   `http://192.168.1.10:7777`. Zmienisz go później w **Ustawienia → Aplikacja
+   Android → Zmień adres serwera** albo z ekranu błędu połączenia.
+
+Linki zewnętrzne (np. „Postaw kawę”) otwierają się w przeglądarce, a przycisk
+Wstecz cofa w historii dashboardu. Aplikacja używa zwykłego HTTP w sieci
+lokalnej (`usesCleartextTraffic`), bo serwer domyślnie nie ma certyfikatu.
+
+### Budowanie ze źródeł
+
+Wymagane: Android Studio (JDK + SDK z platformą 37) albo samo JDK 17+ i SDK.
+
+```bash
+cd android
+echo "sdk.dir=/sciezka/do/Android/Sdk" > local.properties
+./gradlew assembleRelease
+# wynik: app/build/outputs/apk/release/app-release.apk
+```
+
+Bez klucza wydawcy powstanie APK **niepodpisany** (do podpisania własnym
+kluczem). Do podpisu ustaw plik `keystore.properties` (poza repozytorium albo
+`android/keystore.properties` — jest w `.gitignore`) z polami `storeFile`,
+`storePassword`, `keyAlias`, `keyPassword`; ścieżkę można podać zmienną
+`KLIMASTECH_KEYSTORE_PROPS`. Klucz i hasła **nie** są w repozytorium.
 
 ## Instalacja (Docker Compose)
 
@@ -219,6 +260,9 @@ app/
     ├── manifest.json      # PWA manifest
     ├── service-worker.js
     └── icons/             # ikony PWA (192/512/maskable)
+android/                  # aplikacja Android (WebView), projekt Gradle
+├── app/src/main/java/org/eu/klimastech/denon/MainActivity.java
+└── ...
 docs/
 └── screenshots/
 ```
