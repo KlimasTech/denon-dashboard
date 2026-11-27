@@ -158,36 +158,41 @@ wysyłają do AVR, gdy urządzenie jest w standby.
 - W pełni responsywny, ciemny motyw
 - Pole **Nazwa** w Ustawieniach — wyświetlana jako tytuł strony głównej
   (puste = „Denon”)
-- **Aplikacja Android** (`android/`) — podpisany APK „Denon Pilot”, patrz niżej
+- **Aplikacja Android** (`android/`) — samodzielny, podpisany APK „Denon Pilot”
+  (bez serwera, strona w pamięci telefonu), patrz niżej
 - Sekcja **Wsparcie** w Ustawieniach z linkiem „Postaw kawę”
 
 ## Aplikacja Android
 
 Podpisany plik **APK** (wydawca: KlimasTech) jest dołączony do każdego wydania
 w zakładce [Releases](https://github.com/KlimasTech/denon-dashboard/releases).
-To lekkie opakowanie (WebView, bez zewnętrznych bibliotek) dla dashboardu.
+To **samodzielna aplikacja — nie potrzebuje serwera**: steruje amplitunerem
+wprost z telefonu.
 
-**Strona jest wbudowana w APK** (`assets/www`, kopiowana przy budowaniu z
-`app/static`). Przy pierwszym uruchomieniu i po każdej aktualizacji aplikacja
-rozpakowuje ją do pamięci wewnętrznej telefonu (`filesDir/www`) i stamtąd ją
-czyta — interfejs otwiera się od razu, także gdy serwer jest wyłączony
-(wtedy pokazuje brak połączenia). Aplikacja serwuje te pliki pod adresem
-serwera, więc API i WebSocket (`/api/*`, `/ws`) idą normalnie do backendu,
-bez CORS i bez zmian po stronie serwera. Sterowanie i stan nadal pochodzą z
-serwera, a **zmiany samego wyglądu strony wymagają nowej wersji APK**
-(zmiany w backendzie działają od razu).
+- **Strona wbudowana w APK** (`assets/www`, kopiowana przy budowaniu z
+  `app/static`). Przy pierwszym uruchomieniu i po każdej aktualizacji aplikacja
+  rozpakowuje ją do pamięci wewnętrznej telefonu (`filesDir/www`) i stamtąd ją
+  czyta (pod wirtualnym adresem `https://denon-pilot.local/`, nic nie wychodzi
+  do sieci).
+- **Backend w telefonie** (`AvrBackend.java`) robi to samo co `app/main.py`:
+  trwałe połączenie telnet (TCP :23) z amplitunerem, stan w czasie
+  rzeczywistym, konfiguracja, odczyt modelu/FW (UPnP) i listy źródeł (panel
+  producenta). Strona rozmawia z nim przez te same ścieżki `/api/*` i „WebSocket”
+  `/ws`, podmienione w `app-shim.js` na most JavaScript ↔ Java — w zwykłej
+  przeglądarce ten plik nic nie robi.
+- **Brak adresu serwera**: jedyne, co się wpisuje, to **adres IP amplitunera**
+  w zakładce Ustawienia (jak w wersji serwerowej).
 
-1. Zainstaluj serwer (patrz niżej) i sprawdź, że dashboard działa w przeglądarce
-   telefonu.
-2. Pobierz `DenonPilot-<wersja>.apk` z Releases i zainstaluj (Android poprosi
-   o zgodę na instalację z nieznanych źródeł).
-3. Przy pierwszym uruchomieniu wpisz adres serwera, np.
-   `http://192.168.1.10:7777`. Zmienisz go później w **Ustawienia → Aplikacja
-   Android → Zmień adres serwera** albo z ekranu błędu połączenia.
+Instalacja: pobierz `DenonPilot-<wersja>.apk` z Releases i zainstaluj (Android
+poprosi o zgodę na instalację z nieznanych źródeł), uruchom, wejdź w
+**Ustawienia**, wpisz IP amplitunera i **Zapisz**. Telefon musi być w tej samej
+sieci co amplituner (Android 17+ poprosi o zgodę na dostęp do sieci lokalnej).
+Linki zewnętrzne (np. „Postaw kawę”, panel producenta) otwierają się w
+przeglądarce.
 
-Linki zewnętrzne (np. „Postaw kawę”) otwierają się w przeglądarce, a przycisk
-Wstecz cofa w historii dashboardu. Aplikacja używa zwykłego HTTP w sieci
-lokalnej (`usesCleartextTraffic`), bo serwer domyślnie nie ma certyfikatu.
+Zmiany wyglądu strony wymagają nowej wersji APK (strona jest w aplikacji).
+Wersja serwerowa (Docker, niżej) nadal działa niezależnie — ten sam
+`index.html` obsługuje oba tryby.
 
 ### Budowanie ze źródeł
 
@@ -269,7 +274,8 @@ app/
     ├── service-worker.js
     └── icons/             # ikony PWA (192/512/maskable)
 android/                  # aplikacja Android (WebView), projekt Gradle
-├── app/src/main/java/org/eu/klimastech/denon/MainActivity.java
+├── app/src/main/java/org/eu/klimastech/denon/MainActivity.java   # WebView + pliki z pamięci wewnętrznej
+├── app/src/main/java/org/eu/klimastech/denon/AvrBackend.java     # telnet/UPnP/konfiguracja w telefonie
 └── ...
 docs/
 └── screenshots/

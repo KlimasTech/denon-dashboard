@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Denon" />
+<script src="/static/app-shim.js"></script>
 <link rel="manifest" href="/static/manifest.json" />
 <link rel="apple-touch-icon" href="/static/icons/icon-192.png" />
 <link rel="icon" href="/static/icons/icon-192.png" />
@@ -278,11 +279,6 @@
       </a>
     </div>
 
-    <div class="card" id="androidCard" style="display:none;">
-      <div class="section-title">Aplikacja Android</div>
-      <button class="btn" id="changeServerBtn" style="width:100%;">🔗 Zmień adres serwera</button>
-    </div>
-
     <div class="card">
       <div class="section-title">Wsparcie</div>
       <div style="color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
@@ -443,12 +439,7 @@ function ustawTytul(name) {
   document.getElementById('pageTitle').textContent = '🎛 ' + n;
 }
 fetch('/api/config').then(r => r.json()).then(c => ustawTytul(c.device_name)).catch(() => {});
-// W aplikacji Android (WebView) pokaz przycisk zmiany adresu serwera
-if (window.AndroidApp) {
-  document.documentElement.classList.add('in-app');
-  document.getElementById('androidCard').style.display = '';
-  document.getElementById('changeServerBtn').onclick = () => window.AndroidApp.openServerSettings();
-}
+
 const hideDisabledInput = document.getElementById('hideDisabledSources');
 const volumeDisplayDbInput = document.getElementById('volumeDisplayDb');
 const nativeConfigLink = document.getElementById('nativeConfigLink');
