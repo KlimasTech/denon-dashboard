@@ -12,6 +12,15 @@ val keystorePropsFile: File? = (System.getenv("KLIMASTECH_KEYSTORE_PROPS")?.let 
     ?: rootProject.file("keystore.properties")).takeIf { it.exists() }
 val keystoreProps = Properties().apply { keystorePropsFile?.inputStream()?.use { load(it) } }
 
+// Pliki strony (app/static) sa wbudowywane w APK jako assets/www; przy pierwszym
+// uruchomieniu aplikacja kopiuje je do pamieci wewnetrznej. Jedno zrodlo prawdy -
+// katalog app/static serwera (bez service-worker.js: w aplikacji niepotrzebny).
+val kopiujStrone = tasks.register<Copy>("kopiujStrone") {
+    from(rootProject.file("../app/static")) { exclude("service-worker.js") }
+    into(layout.projectDirectory.dir("src/main/assets/www"))
+}
+tasks.named("preBuild") { dependsOn(kopiujStrone) }
+
 android {
     namespace = "org.eu.klimastech.denon"
     compileSdk {
@@ -22,8 +31,8 @@ android {
         applicationId = "org.eu.klimastech.denon"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     signingConfigs {

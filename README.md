@@ -165,9 +165,17 @@ wysyłają do AVR, gdy urządzenie jest w standby.
 
 Podpisany plik **APK** (wydawca: KlimasTech) jest dołączony do każdego wydania
 w zakładce [Releases](https://github.com/KlimasTech/denon-dashboard/releases).
-To lekkie opakowanie (WebView, bez zewnętrznych bibliotek) dla dashboardu —
-cała logika pozostaje w serwerze, więc aktualizacja serwera aktualizuje też
-aplikację.
+To lekkie opakowanie (WebView, bez zewnętrznych bibliotek) dla dashboardu.
+
+**Strona jest wbudowana w APK** (`assets/www`, kopiowana przy budowaniu z
+`app/static`). Przy pierwszym uruchomieniu i po każdej aktualizacji aplikacja
+rozpakowuje ją do pamięci wewnętrznej telefonu (`filesDir/www`) i stamtąd ją
+czyta — interfejs otwiera się od razu, także gdy serwer jest wyłączony
+(wtedy pokazuje brak połączenia). Aplikacja serwuje te pliki pod adresem
+serwera, więc API i WebSocket (`/api/*`, `/ws`) idą normalnie do backendu,
+bez CORS i bez zmian po stronie serwera. Sterowanie i stan nadal pochodzą z
+serwera, a **zmiany samego wyglądu strony wymagają nowej wersji APK**
+(zmiany w backendzie działają od razu).
 
 1. Zainstaluj serwer (patrz niżej) i sprawdź, że dashboard działa w przeglądarce
    telefonu.
