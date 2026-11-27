@@ -36,7 +36,7 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding: calc(20px + var(--safe-top)) 14px calc(96px + var(--safe-bottom));
+    padding: calc(10px + var(--safe-top)) 14px calc(84px + var(--safe-bottom));
   }
   .app { width: 100%; max-width: 480px; }
   header {
@@ -45,7 +45,7 @@
     justify-content: space-between;
     margin-bottom: 18px;
   }
-  header h1 { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: .3px; }
+  header h1 { font-size: 22px; margin: 0; font-weight: 600; letter-spacing: .3px; }
   header .status-dot {
     width: 10px; height: 10px; border-radius: 50%;
     background: var(--off);
@@ -160,6 +160,13 @@
   }
   .nav-btn .icon { font-size: 20px; }
   .nav-btn.active { color: var(--accent); background: rgba(77,163,255,.1); }
+
+  /* W aplikacji Android: tytul tuz pod gorna krawedzia, przyciski Pilot/Ustawienia przy samym dole */
+  html.in-app body { padding-top: 4px; padding-bottom: 72px; }
+  html.in-app header { margin-bottom: 12px; }
+  html.in-app .bottom-nav { padding-bottom: 0; background: rgba(15,17,21,.97); }
+  html.in-app .bottom-nav-inner { padding: 4px 10px 4px; }
+  html.in-app .nav-btn { padding: 6px 0; }
 
   /* ── Ustawienia ── */
   .field { margin-bottom: 14px; }
@@ -438,6 +445,7 @@ function ustawTytul(name) {
 fetch('/api/config').then(r => r.json()).then(c => ustawTytul(c.device_name)).catch(() => {});
 // W aplikacji Android (WebView) pokaz przycisk zmiany adresu serwera
 if (window.AndroidApp) {
+  document.documentElement.classList.add('in-app');
   document.getElementById('androidCard').style.display = '';
   document.getElementById('changeServerBtn').onclick = () => window.AndroidApp.openServerSettings();
 }
